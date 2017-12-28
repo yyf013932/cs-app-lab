@@ -139,7 +139,7 @@ NOTES:
  *   Rating: 1
  */
 int bitAnd(int x, int y) {
-  return ~(~x|~y);
+	return ~(~x|~y);
 }
 /* 
  * getByte - Extract byte n from word x
@@ -150,7 +150,7 @@ int bitAnd(int x, int y) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-  return x>>(n<<3)&255;
+	return x>>(n<<3)&255;
 }
 /* 
  * logicalShift - shift x to the right by n, using a logical shift
@@ -161,7 +161,8 @@ int getByte(int x, int n) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+	int mask = ~(((1<<31)>>n)<<1);
+	return (x>>n)&mask;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -171,7 +172,21 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  return 2;
+	int result;
+	int tem_mask1 = 0x55 | 0x55<<8;
+	int mask1 = tem_mask1 | tem_mask1<<16;
+	int tem_mask2 = 0x33 | 0x33<<8;
+	int mask2 = tem_mask2 | tem_mask2<<16;
+	int tem_mask3 = 0x0f | 0x0f<<8;
+	int mask3 = tem_mask3 | tem_mask3<<16;
+	int mask4 = 0xff | 0xff<<16;
+	int mask5 = 0xff | 0xff<<8;
+	result=(x&mask1)+((x>>1)&mask1);  
+	result=(result&mask2)+((result>>2)&mask2);  
+	result = (result + (result>>4)) & mask3;
+	result = (result + (result>>8)) & mask4;
+	result = (result + (result>>16)) & mask5;
+	return result;
 }
 /* 
  * bang - Compute !x without using !
@@ -181,7 +196,7 @@ int bitCount(int x) {
  *   Rating: 4 
  */
 int bang(int x) {
-  return 2;
+	return (~(x|(~x+1))>>31)&1;
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -190,7 +205,7 @@ int bang(int x) {
  *   Rating: 1
  */
 int tmin(void) {
-  return 2;
+  return 1<<31;
 }
 /* 
  * fitsBits - return 1 if x can be represented as an 
@@ -202,7 +217,10 @@ int tmin(void) {
  *   Rating: 2
  */
 int fitsBits(int x, int n) {
-  return 2;
+	int shiftBits = 33+~n;
+	int xNew = (x<<shiftBits)>>shiftBits;
+	int er = x ^ xNew;
+	return !er;
 }
 /* 
  * divpwr2 - Compute x/(2^n), for 0 <= n <= 30
@@ -213,7 +231,8 @@ int fitsBits(int x, int n) {
  *   Rating: 2
  */
 int divpwr2(int x, int n) {
-    return 2;
+	int t = (x>>31)&1;
+    return (x+(t<<n)+(~t)+1)>>n;
 }
 /* 
  * negate - return -x 
@@ -223,7 +242,7 @@ int divpwr2(int x, int n) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+	return ~x+1;
 }
 /* 
  * isPositive - return 1 if x > 0, return 0 otherwise 
@@ -233,7 +252,8 @@ int negate(int x) {
  *   Rating: 3
  */
 int isPositive(int x) {
-  return 2;
+	//return !((~x)>>31|!x)	
+	return ((~x)>>31)&1+~(!x)+1;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -243,7 +263,7 @@ int isPositive(int x) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+	return ~((y+~x+1)>>31)&1;
 }
 /*
  * ilog2 - return floor(log base 2 of x), where x > 0
